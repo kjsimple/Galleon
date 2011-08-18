@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gydoc.galleon.mybatis.UserMapper">
+
+  <resultMap id="result1" type="User">
+    <result property="id" column="uid" />
+    <result property="creationDate" column="ucreationDate" />
+    <result property="userLogin" column="userLogin" />
+    <result property="userName" column="userName" />
+    <result property="password" column="password" />
+    <result property="version" column="uversion" />
+    <collection property="roles" ofType="Role">
+      <result property="id" column="rid" />
+      <result property="creationDate" column="rcreationDate" />
+      <result property="name" column="name" />
+      <result property="description" column="description" />
+    </collection>
+  </resultMap>
+
+  <select id="findUserByLogin" resultMap="result1">
+    <!--SELECT u.id as uid, u.userLogin, u.userName, u.password, u.creationDate as ucreationDate, u.version as uversion,-->
+           <!--r.id as rid, r.name, r.description, r.creationDate as rcreationDate-->
+    <!--FROM Users u, user_role ur, Roles r-->
+    <!--WHERE u.id=ur.userid and r.id=ur.roleid-->
+          <!--and u.userLogin=#{userLogin}-->
+    SELECT t.*,
+           r.id as rid, r.name, r.description, r.creationDate as rcreationDate
+    FROM (SELECT u.id as uid, u.userLogin, u.userName, u.password, u.creationDate as ucreationDate, u.version as uversion,
+                          ur.userid, ur.roleid as roleid
+                   FROM Users u left join user_role ur on ur.userid=u.id) t LEFT JOIN roles r ON t.roleid=r.id
+                   WHERE t.userLogin=#{userLogin}
+  </select>
+  
+  <resultMap id="UserLoginStringList" type="java.lang.String">
+    <result property="" column="userLogin" />
+  </resultMap>
+  
+  <select id="findUsersLikeLogin" resultMap="UserLoginStringList">
+    SELECT userLogin FROM Users WHERE userLogin LIKE #{userLogin}
+  </select>
+
+</mapper>

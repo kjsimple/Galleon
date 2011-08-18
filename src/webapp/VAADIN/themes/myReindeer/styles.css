@@ -1,0 +1,13 @@
+@import "../reindeer/styles.css";
+
+.v-caption-galleon-data-table {
+    font-weight: bold;
+}
+
+.galleon-data-table {
+    padding-top: 4px;
+}
+
+.notDisplay {
+    display: none;
+}

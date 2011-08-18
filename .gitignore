@@ -1,0 +1,7 @@
+out/
+build/
+src/webapp/WEB-INF/classes/
+src/webapp/WEB-INF/lib/
+src/webapp/WEB-INF/tld/
+src/java/com/gydoc/galleon/i18n/*.properties
+.idea/workspace.xml

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:lang="http://www.springframework.org/schema/lang" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+                           http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-3.0.xsd
+                           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+                           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+
+  <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource" />
+  </bean>
+
+  <tx:annotation-driven />
+
+  <bean id="idGenerator" class="com.gydoc.galleon.IdGeneratorImpl" init-method="init" factory-method="createInstance">
+    <property name="dataSource" ref="masterDataSource" />
+    <property name="cacheSize" value="100" />
+  </bean>
+
+  <bean abstract="true" id="serviceBase" scope="prototype">
+    
+  </bean>
+
+  <bean id="erService" class="com.gydoc.galleon.serviceimpl.ExpenseReportServiceImpl" parent="serviceBase">
+    <property name="expenseReportDao" ref="erDao" />
+  </bean>
+  
+  <bean id="userService" class="com.gydoc.galleon.serviceimpl.UserServiceImpl" parent="serviceBase">
+    <property name="userDao" ref="userDao" />
+  </bean>
+
+  <bean id="purposeService" class="com.gydoc.galleon.serviceimpl.PurposeServiceImpl" parent="serviceBase">
+    <property name="purposeDao" ref="purposeDao" />
+  </bean>
+
+  <bean id="depService" class="com.gydoc.galleon.serviceimpl.DepartmentServiceImpl" parent="serviceBase">
+    <property name="departmentDao" ref="depDao" />
+  </bean>
+
+  <bean id="roleService" class="com.gydoc.galleon.serviceimpl.RoleServiceImpl" parent="serviceBase">
+    <property name="roleDao" ref="roleDao" />
+  </bean>
+  
+  <!-- Activiti -->
+  <bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
+    <property name="dataSource" ref="dataSource" />
+    <property name="transactionManager" ref="transactionManager" />
+    <property name="databaseSchemaUpdate" value="true" />
+    <property name="jobExecutorActivate" value="true" />
+  </bean>
+  
+  <bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
+    <property name="processEngineConfiguration" ref="processEngineConfiguration" />
+  </bean>
+  
+  <bean id="repositoryService" factory-bean="processEngine" factory-method="getRepositoryService" />
+  <bean id="runtimeService" factory-bean="processEngine" factory-method="getRuntimeService" />
+  <bean id="taskService" factory-bean="processEngine" factory-method="getTaskService" />
+  <bean id="historyService" factory-bean="processEngine" factory-method="getHistoryService" />
+  <bean id="managementService" factory-bean="processEngine" factory-method="getManagementService" />
+  <bean id="identityService" factory-bean="processEngine" factory-method="getIdentityService" />
+
+</beans>

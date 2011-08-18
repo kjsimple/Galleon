@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.gydoc.galleon.domain">
+  <class name="ExpenseType" table="ExpenseType">
+    <id name="id">
+      <generator class="native">
+        <param name="sequence">expensetype_id_seq</param>
+      </generator>
+    </id>
+    <property name="name" not-null="true" length="100" />
+    <property name="description" not-null="false" length="1000" />
+    <property name="creationDate" not-null="true" />
+  </class>
+</hibernate-mapping>

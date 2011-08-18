@@ -1,0 +1,11 @@
+<Context docBase="@BASE_DIR@/src/webapp">
+
+  <Resource name="jdbc/galleon" auth="Container" type="javax.sql.DataSource" maxActive="100"
+            maxIdle="30" maxWait="200" username="galleon" password="galleon" driverClassName="org.postgresql.Driver"
+            url="jdbc:postgresql://localhost/galleon" />
+
+  <Resource name="jdbc/t1" auth="Container" type="javax.sql.DataSource" maxActive="100"
+            maxIdle="30" maxWait="200" username="galleon" password="galleon" driverClassName="org.postgresql.Driver"
+            url="jdbc:postgresql://localhost/tenant1" />
+
+</Context>

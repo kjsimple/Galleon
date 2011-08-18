@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="galleon" default="build" basedir=".">
+  
+  <property file="galleonBuild.properties" />
+  <property environment="env" />
+
+  <path id="path.testng">
+    <fileset dir="${testng.home}">
+      <include name="testng*.jar" />
+    </fileset>
+  </path>
+  <taskdef classpathref="path.testng" resource="testngtasks" />
+
+  <path id="path.jdbc">
+    <fileset dir="${postgresql.jdbc.home}">
+      <include name="${jdbc.jar.name}" />
+    </fileset>
+  </path>
+  <path id="path.runtime">
+    <fileset dir="${vaadin.home}/WebContent">
+      <include name="vaadin-*.jar" />
+    </fileset>
+    <fileset dir="${spring.home}/dist">
+      <include name="org.springframework.aop-3.0.5.RELEASE.jar" />
+      <include name="org.springframework.context-3.0.5.RELEASE.jar" />
+      <include name="org.springframework.beans-3.0.5.RELEASE.jar" />
+      <include name="org.springframework.core-3.0.5.RELEASE.jar" />
+      <include name="org.springframework.asm-3.0.5.RELEASE.jar" />
+      <include name="org.springframework.expression-3.0.5.RELEASE.jar" />
+      <include name="org.springframework.orm-3.0.5.RELEASE.jar" />
+      <include name="org.springframework.transaction-3.0.5.RELEASE.jar" />
+      <include name="org.springframework.jdbc-3.0.5.RELEASE.jar" />
+    </fileset>
+    <fileset dir="${aopalliance.home}">
+      <include name="aopalliance.jar" />
+    </fileset>
+    <fileset dir="${log4j.home}">
+      <include name="log4j-*.jar" />
+    </fileset>
+    <fileset dir="${slf4j.home}">
+			<include name="slf4j-api-1.6.1.jar" />
+      <include name="slf4j-log4j12-1.6.1.jar" />
+      <include name="jcl-over-slf4j-1.6.1.jar" />
+    </fileset>
+    <fileset dir="${activiti.home}/setup/files/dependencies/libs">
+      <include name="activation-1.1.jar" />
+      <include name="activiti-engine-5.6.jar" />
+      <include name="commons-email-1.2.jar" />
+      <include name="commons-logging-1.1.1.jar" />
+      <include name="livetribe-jsr223-2.0.6.jar" />
+      <include name="mail-1.4.1.jar" />
+      <include name="mybatis-3.0.4.jar" />
+      <include name="activiti-spring-5.6.jar" />
+    </fileset>
+    <fileset dir="${mybatis.home}">
+      <include name="mybatis-3.0.5.jar" />
+    </fileset>
+    <fileset dir="${mybatis-spring.home}">
+      <include name="mybatis-spring-1.0.1.jar" />
+    </fileset>
+  </path>
+  
+  <path id="path.compile">
+    <fileset dir="${tomcat.home}">
+      <include name="lib/servlet-api.jar" />
+    </fileset>
+  </path>
+
+  <target name="init">
+    <mkdir dir="${build.dir}" />
+    <mkdir dir="${war.classes.dir}" />
+    <mkdir dir="${war.lib.dir}" />
+    <mkdir dir="${war.dir}/WEB-INF/tld" />
+  </target>
+  
+  <target name="clean">
+    <delete dir="${build.dir}" />
+    <delete dir="${war.classes.dir}" />
+    <delete dir="${war.lib.dir}" />
+    <delete dir="${war.dir}/WEB-INF/tld" />
+    <delete file="${tomcat.home}/lib/${jdbc.jar.name}" />
+    <delete dir="${tomcat.home}/webapps/${project.name}" />
+    <delete file="${tomcat.home}/conf/Catalina/localhost/${project.name}.xml" />
+  </target>
+  
+  <target name="build" depends="init, copyResources, prepareDatabaseScripts">
+    <antcall target="compile" />
+  </target>
+  
+  <target name="copyResources" depends="init">
+    <native2ascii encoding="UTF-8" dest="${java.src.dir}" src="${i18n.dir}">
+      <include name="**/*.properties" />
+    </native2ascii>
+    <copy todir="${war.classes.dir}">
+      <fileset dir="${source.dir}/java">
+        <include name="**/*.xml" />
+        <include name="**/*.properties" />
+      </fileset>
+    </copy>
+    <copy todir="${war.lib.dir}" flatten="true">
+      <path refid="path.runtime" />
+    </copy>
+    <copy todir="${tomcat.home}/lib">
+      <path refid="path.jdbc" />
+    </copy>
+  </target>
+  
+  <target name="compile" depends="init">
+    <javac destdir="${war.classes.dir}" debug="true" deprecation="on"
+           encoding="UTF-8">
+      <compilerarg value="-Xlint:unchecked" />
+      <src path="${source.dir}/java" />
+      <classpath refid="path.runtime" />
+      <classpath refid="path.compile" />
+    </javac>
+  </target>
+  
+  <target name="deploy" depends="build">
+    <copy todir="${tomcat.home}" filtering="true">
+      <fileset dir="src/tomcat">
+        <include name="**/*.xml" />
+      </fileset>
+      <filterset begintoken="@" endtoken="@">
+        <filter token="BASE_DIR" value="${basedir}" />
+      </filterset>
+    </copy>
+  </target>
+
+  <target name="prepareDatabaseScripts">
+    <mkdir dir="${db.sqlscript.dir}" />
+    <copy todir="${db.sqlscript.dir}" filtering="true">
+      <fileset dir="${source.dir}/db/${db.type}">
+        <include name="**/*.sql" />
+      </fileset>
+      <filterset begintoken="@#" endtoken="#@">
+        <filter token="CURRENT_TIMESTAMP" value="${db.sql.currentTimestamp}" />
+      </filterset>
+    </copy>
+  </target>
+  
+  <target name="restoredb" depends="prepareDatabaseScripts">
+    
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.drop.cycle.sql" />
+      <param name="dburl" value="${db.dev.url}" />
+      <param name="onerror" value="continue" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.drop.history.sql" />
+      <param name="dburl" value="${db.dev.url}" />
+      <param name="onerror" value="continue" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.drop.identity.sql" />
+      <param name="dburl" value="${db.dev.url}" />
+      <param name="onerror" value="continue" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.drop.engine.sql" />
+      <param name="dburl" value="${db.dev.url}" />
+      <param name="onerror" value="continue" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.cleansql}" />
+      <param name="dburl" value="${db.dev.url}" />
+      <param name="onerror" value="abort" />
+    </antcall>
+     
+    <!--antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.create.engine.sql" />
+      <param name="dburl" value="${db.dev.url}" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.create.identity.sql" />
+      <param name="dburl" value="${db.dev.url}" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.create.history.sql" />
+      <param name="dburl" value="${db.dev.url}" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.create.cycle.sql" />
+      <param name="dburl" value="${db.dev.url}" />
+    </antcall-->
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.initsql}" />
+      <param name="dburl" value="${db.dev.url}" />
+      <param name="onerror" value="abort" />
+    </antcall>
+  </target>
+
+  <target name="execsql">
+    <sql driver="org.postgresql.Driver" url="${dburl}"
+         userid="galleon" password="galleon" src="${srcfile}" print="true" encoding="UTF-8" onerror="${onerror}">
+      <classpath refid="path.jdbc" />
+    </sql>
+  </target>
+
+  <target name="test" depends="clean, build">
+    <mkdir dir="${test.report.dir}" />
+    <mkdir dir="${test.classes.dir}" />
+    <copy todir="${test.classes.dir}" overwrite="true">
+      <fileset dir="${source.dir}/java">
+        <include name="**/*.xml" />
+        <include name="**/*.properties" />
+      </fileset>
+    </copy>
+    <copy todir="${test.classes.dir}" overwrite="true">
+      <fileset dir="${source.dir}/test">
+        <include name="**/*.xml" />
+        <include name="**/*.properties" />
+      </fileset>
+    </copy>
+    <javac destdir="${test.classes.dir}" debug="true" deprecation="on"
+           encoding="UTF-8">
+      <compilerarg value="-Xlint:unchecked" />
+      <src path="${source.dir}/test" />
+      <classpath refid="path.runtime" />
+      <classpath refid="path.testng" />
+      <classpath path="${war.classes.dir}" />
+    </javac>
+
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.drop.cycle.sql" />
+      <param name="dburl" value="${db.test.url}" />
+      <param name="onerror" value="continue" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.drop.history.sql" />
+      <param name="dburl" value="${db.test.url}" />
+      <param name="onerror" value="continue" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.drop.identity.sql" />
+      <param name="dburl" value="${db.test.url}" />
+      <param name="onerror" value="continue" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.sqlscript.dir}/activiti.drop.engine.sql" />
+      <param name="dburl" value="${db.test.url}" />
+      <param name="onerror" value="continue" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.cleansql}" />
+      <param name="dburl" value="${db.test.url}" />
+      <param name="onerror" value="abort" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.initsql}" />
+      <param name="dburl" value="${db.test.url}" />
+      <param name="onerror" value="abort" />
+    </antcall>
+    <antcall target="execsql">
+      <param name="srcfile" value="${db.testDataSql}" />
+      <param name="dburl" value="${db.test.url}" />
+      <param name="onerror" value="abort" />
+    </antcall>
+    <testng outputdir="${test.report.dir}" haltOnfailure="true" >
+      <classpath refid="path.testng" />
+      <classpath refid="path.runtime" />
+      <classpath path="${test.classes.dir}" />
+      <classpath path="${war.classes.dir}" />
+      <classpath refid="path.jdbc" />
+
+      <classfileset dir="${test.classes.dir}" includes="**/*.class" />
+    </testng>
+  </target>
+
+</project>

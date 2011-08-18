@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+            http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+  <bean id="masterDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+    <property name="driverClass" value="org.postgresql.Driver" />
+    <property name="url" value="jdbc:postgresql://localhost/galleon-master" />
+    <property name="username" value="galleon" />
+    <property name="password" value="galleon" />
+  </bean>
+
+  <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    <property name="dataSource" ref="dataSource" />
+    <property name="configLocation" value="classpath:mybatis.xml" />
+  </bean>
+
+  <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+    <constructor-arg index="0" ref="sqlSessionFactory" />
+  </bean>
+
+  <bean abstract="true" id="daoBase" scope="prototype">
+    <property name="sqlSession" ref="sqlSession"/>
+  </bean>
+  
+  <bean id="erDao" parent="daoBase" class="com.gydoc.galleon.daoimpl.ExpenseReportDaoImpl"/>
+  <bean id="userDao" parent="daoBase" class="com.gydoc.galleon.daoimpl.UserDaoImpl"/>
+  <bean id="purposeDao" parent="daoBase" class="com.gydoc.galleon.daoimpl.PurposeDaoImpl"/>
+  <bean id="depDao" parent="daoBase" class="com.gydoc.galleon.daoimpl.DepartmentDaoImpl"/>
+  <bean id="roleDao" parent="daoBase" class="com.gydoc.galleon.daoimpl.RoleDaoImpl"/>
+
+</beans>
