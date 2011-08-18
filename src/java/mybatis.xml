@@ -18,7 +18,7 @@
   </typeHandlers>
 
   <plugins>
-    <plugin interceptor="com.gydoc.galleon.mybatis.galleonInterceptor"></plugin>
+    <plugin interceptor="com.gydoc.galleon.mybatis.GalleonInterceptor"></plugin>
   </plugins>
 
   <environments default="development">

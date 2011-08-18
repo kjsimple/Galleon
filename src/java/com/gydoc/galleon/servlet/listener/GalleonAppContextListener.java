@@ -15,7 +15,7 @@ public class GalleonAppContextListener implements ServletContextListener {
     private static Logger log = LoggerFactory.getLogger(GalleonAppContextListener.class);
 
     public void contextInitialized(ServletContextEvent servletContextEvent) {
-        String fileList = servletContextEvent.getServletContext().getInitParameter("galleonSpringConfFiles");
+        String fileList = servletContextEvent.getServletContext().getInitParameter("GalleonSpringConfFiles");
         if (log.isInfoEnabled()) {
             log.info("Load spring conf files: " + fileList);
         }

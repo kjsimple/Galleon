@@ -31,7 +31,7 @@
     
   <listener>
     <display-name>Application Startup listener</display-name>
-    <listener-class>com.gydoc.galleon.servlet.listener.galleonAppContextListener</listener-class>
+    <listener-class>com.gydoc.galleon.servlet.listener.GalleonAppContextListener</listener-class>
   </listener>
   
   <!--filter>
