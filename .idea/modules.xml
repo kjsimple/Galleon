@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/src/Esm.iml" filepath="$PROJECT_DIR$/src/Esm.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/Galleon.iml" filepath="$PROJECT_DIR$/src/Galleon.iml" />
     </modules>
   </component>
 </project>
