@@ -9,7 +9,7 @@ import com.vaadin.ui.Button;
 public class UIUtil {
 
     private UIUtil() {
-
+        
     }
 
     public static void makeDefaultButton(Button button) {

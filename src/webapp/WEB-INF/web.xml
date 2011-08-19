@@ -19,7 +19,11 @@
     <param-value>spring.xml;galleon-data-spec.xml;galleon-data.xml</param-value>
   </context-param>
   
-  <filter>
+  <!-- 
+      Vaadin framwork can handle the tenant by itself (see com.gydoc.galleon.ui.ApplicationMain). You may 
+      want to enable this filter if the framework cannot handle the tenant.
+  -->
+  <!--filter>
     <filter-name>tenantFilter</filter-name>
     <filter-class>com.gydoc.galleon.tenant.HttpRequestFilter</filter-class>
   </filter>
@@ -27,7 +31,7 @@
   <filter-mapping>
     <filter-name>tenantFilter</filter-name>
     <url-pattern>*</url-pattern>
-  </filter-mapping>
+  </filter-mapping-->
     
   <listener>
     <display-name>Application Startup listener</display-name>
@@ -50,6 +54,10 @@
     <init-param>
       <param-name>application</param-name>
       <param-value>com.gydoc.galleon.ui.ApplicationMain</param-value>
+    </init-param>
+    <init-param>
+      <param-name>applicationContextPath</param-name>
+      <param-value>galleon</param-value>
     </init-param>
   </servlet>
 

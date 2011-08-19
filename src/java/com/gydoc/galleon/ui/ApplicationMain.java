@@ -8,6 +8,7 @@ import com.vaadin.Application;
 import com.vaadin.data.Validator;
 import com.vaadin.terminal.gwt.server.HttpServletRequestListener;
 import com.vaadin.ui.*;
+import com.gydoc.galleon.tenant.TenantManager;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +17,7 @@ public class ApplicationMain extends Application implements HttpServletRequestLi
     
     private Window mainWindow;
     private Window loginWindow;
+    private String tenant;
     private static ThreadLocal<ApplicationMain> applications = new ThreadLocal<ApplicationMain>();
 
     public static Application.SystemMessages getSystemMessages() {
@@ -26,9 +28,13 @@ public class ApplicationMain extends Application implements HttpServletRequestLi
         return applications.get();
     }
     
+    public void cleanUp() {
+        setTenant(null);
+    }
+    
     public void init() {
         applications.set(this);
-        mainWindow = new Window("galleon");
+        mainWindow = new Window("Galleon");
         setMainWindow(mainWindow);
         setTheme("myReindeer");
         mainWindow.getApplication().addListener(new UserChangeListener() {
@@ -40,6 +46,12 @@ public class ApplicationMain extends Application implements HttpServletRequestLi
                     mainWindow.addWindow(mainFrame);
                     mainFrame.addListener(new Window.CloseListener() {
                         public void windowClose(Window.CloseEvent e) {
+                            String t = (String) TenantManager.getInstance().getTenant();
+                            if (t != null) {
+                                String url = String.format("/%1$s?%2$s=%3$s", getProperty("applicationContextPath"), TenantManager.TENANT_KEY, t);
+                                mainWindow.getApplication().setLogoutURL(url);
+                            }
+                            cleanUp();
                             mainWindow.getApplication().close();
                         }
                     });
@@ -92,7 +104,7 @@ public class ApplicationMain extends Application implements HttpServletRequestLi
 
         mainWindow.addWindow(loginWindow);
         loginForm.focus();
-        }
+    }
 
     private Component createButtonPanel(Button loginButton) {
         HorizontalLayout layout = new HorizontalLayout();
@@ -107,11 +119,31 @@ public class ApplicationMain extends Application implements HttpServletRequestLi
     }
 
     public void onRequestStart(HttpServletRequest request, HttpServletResponse response) {
+        // to handle multi-tenant
+        if (mainWindow == null || mainWindow.getApplication().getUser() == null) {
+            // allow user to switch to another tenant before login successfully.
+            String tenant = request.getParameter(TenantManager.TENANT_KEY);
+            if (tenant != null) {
+                setTenant(tenant);
+            }
+            TenantManager.getInstance().setTenant(getTenant());
+        } else {
+            // always use tenant from session after user logged in
+            TenantManager.getInstance().setTenant(getTenant());
+        }
         applications.set(this);
     }
 
     public void onRequestEnd(HttpServletRequest request, HttpServletResponse response) {
         applications.remove();
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
     
 }

@@ -2,6 +2,7 @@ package com.gydoc.galleon.tenant;
 
 public class TenantManager {
     
+    public static final String TENANT_KEY = "tenant";
     private ThreadLocal<Object> tl = new ThreadLocal<Object>();
     private static TenantManager instance = new TenantManager();
     
