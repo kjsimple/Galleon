@@ -8,7 +8,10 @@ import com.vaadin.Application;
 import com.vaadin.data.Validator;
 import com.vaadin.terminal.gwt.server.HttpServletRequestListener;
 import com.vaadin.ui.*;
+import com.vaadin.terminal.UserError;
 import com.gydoc.galleon.tenant.TenantManager;
+import com.gydoc.galleon.service.UserService;
+import com.gydoc.galleon.SpringUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -78,7 +81,6 @@ public class ApplicationMain extends Application implements HttpServletRequestLi
         uField.setRequiredError(Res.getMessage("loginDialog.userName.required"));
         loginForm.addField("username", uField);
         final PasswordField pField = new PasswordField(Res.getMessage("loginDialog.password.label"));
-        uField.addValidator(new LoginFormValidator(loginForm));
         loginForm.addField("password", pField);
 
         Button loginButton = new Button(Res.getMessage("loginDialog.loginButton.caption"));
@@ -86,19 +88,27 @@ public class ApplicationMain extends Application implements HttpServletRequestLi
         loginButton.addListener(new Button.ClickListener() {
             public void buttonClick(Button.ClickEvent clickEvent) {
                 try {
-                    loginForm.commit();
-                    User u = new User();
-                    u.setUserName((String) uField.getValue());
-                    u.setPassword((String) pField.getValue());
-                    pField.setValue(""); // clear password for security issue
-                    getMainWindow().removeWindow(loginWindow);
-                    getMainWindow().getApplication().setUser(u);
+                    AbstractField userNameField = (AbstractField) loginForm.getField("username");
+                    AbstractField passwordField = (AbstractField) loginForm.getField("password");
+                    String userName = userNameField.toString();
+                    String password = loginForm.getField("password").getValue().toString();
+                    UserService service = (UserService) SpringUtil.getBean("userService");
+                    if (service.authenticate(userName, password)) {
+                        passwordField.setValue(""); // clear password for security sake
+                        getMainWindow().removeWindow(loginWindow);
+                        User u = new User();
+                        u.setUserName(userName);
+                        
+                        getMainWindow().getApplication().setUser(u);
+                        return ;
+                    }
+                    userNameField.setComponentError(new UserError(Res.getMessage("loginDialog.validat.invaliduser")));
                 } catch (Validator.InvalidValueException e) {
                     // ignore
                 }
             }
         });
-
+        
         loginForm.getLayout().addComponent(createButtonPanel(loginButton));
         loginWindow.addComponent(loginForm);
 

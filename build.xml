@@ -22,15 +22,15 @@
       <include name="vaadin-*.jar" />
     </fileset>
     <fileset dir="${spring.home}/dist">
-      <include name="org.springframework.aop-3.0.5.RELEASE.jar" />
-      <include name="org.springframework.context-3.0.5.RELEASE.jar" />
-      <include name="org.springframework.beans-3.0.5.RELEASE.jar" />
-      <include name="org.springframework.core-3.0.5.RELEASE.jar" />
-      <include name="org.springframework.asm-3.0.5.RELEASE.jar" />
-      <include name="org.springframework.expression-3.0.5.RELEASE.jar" />
-      <include name="org.springframework.orm-3.0.5.RELEASE.jar" />
-      <include name="org.springframework.transaction-3.0.5.RELEASE.jar" />
-      <include name="org.springframework.jdbc-3.0.5.RELEASE.jar" />
+      <include name="org.springframework.aop-${spring.version}.RELEASE.jar" />
+      <include name="org.springframework.context-${spring.version}.RELEASE.jar" />
+      <include name="org.springframework.beans-${spring.version}.RELEASE.jar" />
+      <include name="org.springframework.core-${spring.version}.RELEASE.jar" />
+      <include name="org.springframework.asm-${spring.version}.RELEASE.jar" />
+      <include name="org.springframework.expression-${spring.version}.RELEASE.jar" />
+      <include name="org.springframework.orm-${spring.version}.RELEASE.jar" />
+      <include name="org.springframework.transaction-${spring.version}.RELEASE.jar" />
+      <include name="org.springframework.jdbc-${spring.version}.RELEASE.jar" />
     </fileset>
     <fileset dir="${aopalliance.home}">
       <include name="aopalliance.jar" />
